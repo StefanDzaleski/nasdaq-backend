@@ -20,23 +20,37 @@ getSingleLine = (data, value, companyLineNumber) => {
     return Promise.resolve(singleLineData);
 }
 
-getMultipleLines = (data, values) => {
+getMultipleLines = (data, values, arearange) => {
     let newData = [];
-    values.forEach(value => {
-        let singleLineData = Object.entries(data).map(item => {
-            let itemData = {};
-            let itemDate = new Date(item[0]).getTime();
-            let itemValue = parseFloat(item[1][value]);
-            itemData = [itemDate, itemValue];
-            return itemData;
+    if (arearange == 'true') {
+            let singleLineData = Object.entries(data).map(item => {
+                let itemData = {};
+                let itemDate = new Date(item[0]).getTime();
+                let itemValue1 = parseFloat(item[1][values[0]]);
+                let itemValue2 = parseFloat(item[1][values[1]]);
+                itemData = [itemDate, itemValue1, itemValue2];
+                return itemData;
+            });
+            singleLineData = singleLineData.sort((a, b) => {
+                return a[0] - b[0];
+            });
+            newData.push(singleLineData);
+    } else {
+        values.forEach(value => {
+            let singleLineData = Object.entries(data).map(item => {
+                let itemData = {};
+                let itemDate = new Date(item[0]).getTime();
+                let itemValue = parseFloat(item[1][value]);
+                itemData = [itemDate, itemValue];
+                return itemData;
+            });
+    
+            singleLineData = singleLineData.sort((a, b) => {
+                return a[0] - b[0];
+            });
+            newData.push(singleLineData);
         });
-
-        singleLineData = singleLineData.sort((a, b) => {
-            return a[0] - b[0];
-        });
-        newData.push(singleLineData);
-    });
-
+    }
     return Promise.resolve(newData);
 }
 

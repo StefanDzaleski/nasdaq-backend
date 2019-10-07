@@ -2,7 +2,7 @@ const express = require('express');
 const {MongoClient} = require('mongodb');
 const bodyParser = require('body-parser');
 const RequestWrapper = require('./requestWrapper');
-const {CompanyLineNumberEnum, TimeSeriesEnum, TimeSeriesLabel} = require('./enums');
+const {CompanyLineNumberEnum, TimeSeriesEnum, TimeSeriesLabel, CurrencyEnum, CurrencyLabel} = require('./enums');
 const {getSingleLine, getMultipleLines} = require('./parseData');
 // const cors = require('cors');
 
@@ -48,8 +48,9 @@ app.get('/single-company', (req, res) => {
     const interval = req.query.interval;
     const timeSeries = req.query.timeSeries;
     const values = req.query.values;
+    const arearange = req.query.arearange;
 
-    parseSingleCompany(company, interval, timeSeries, values).then(response => {
+    parseSingleCompany(company, interval, timeSeries, values, arearange).then(response => {
         res.send(response);
     });
 });
@@ -76,13 +77,26 @@ app.get('/stock-chart', (req, res) => {
     });
 })
 
-parseSingleCompany = (company, interval, timeSeries, values) => {
+app.get('/currency', (req, res) => {
+    const fromSymbol = req.query.fromSymbol;
+    const toSymbol = req.query.toSymbol;
+    const timeSeries = req.query.timeSeries;
+    const interval = req.query.interval;
+    parseCurrencyData(fromSymbol, toSymbol, timeSeries, interval).then(response => {
+        res.send(response);
+    });
+})
+
+parseSingleCompany = (company, interval, timeSeries, values, arearange) => {
+    if (values.split(",").length > 1) {
+        values = values.split(",");
+    }
     if (timeSeries === TimeSeriesEnum.Intraday) {
         return new Promise((resolve, reject) => {
             RequestWrapper.get(BASE_URL + '/query?function=TIME_SERIES_INTRADAY&symbol=' + company + '&interval=' + interval + '&apikey=' + API_KEY).then(response => {
                 const filteredResponse = {data: response['Time Series (' + interval + ')']};
                 if (Array.isArray(values)) {
-                    return getMultipleLines(filteredResponse.data, values).then(response => {
+                    return getMultipleLines(filteredResponse.data, values, arearange).then(response => {
                         return resolve(response);
                     });
                 } else {
@@ -101,7 +115,7 @@ parseSingleCompany = (company, interval, timeSeries, values) => {
                     data: response[timeSeries === TimeSeriesEnum.Daily ? 'Time Series (' + TimeSeriesLabel[timeSeries] + ')' : TimeSeriesLabel[timeSeries] + ' Time Series']
                 };
                 if (Array.isArray(values)) {
-                    return getMultipleLines(filteredResponse.data, values).then(response => {
+                    return getMultipleLines(filteredResponse.data, values, arearange).then(response => {
                         return resolve(response);
                     });
                 } else {
@@ -161,6 +175,29 @@ parseStockChartData = (company, interval, timeSeries, values) => {
             RequestWrapper.get(BASE_URL + '/query?function=' + timeSeries + '&symbol=' + company + '&apikey=' + API_KEY).then(response => {
                 const filteredResponse = response[timeSeries === TimeSeriesEnum.Daily ? 'Time Series (' + TimeSeriesLabel[timeSeries] + ')' : TimeSeriesLabel[timeSeries] + ' Time Series']
                 parseStockChartResponse(filteredResponse).then(response => {
+                    return resolve(response);
+                })
+            })
+        })
+    }
+}
+
+parseCurrencyData = (fromSymbol, toSymbol, timeSeries, interval) => {
+    if (timeSeries === CurrencyEnum.Intraday) {
+        return new Promise((resolve, reject) => {
+            RequestWrapper.get(BASE_URL + '/query?function=FX_INTRADAY&from_symbol=' + fromSymbol + '&to_symbol=' + toSymbol + '&interval=' + interval + '&apikey=' + API_KEY).then(response => {
+                const filteredResponse = response['Time Series FX (' + interval + ')'];
+                return getSingleLine(filteredResponse, '1. open', CompanyLineNumberEnum.SingleCompany).then(response => {
+                    return resolve(response);
+                })
+            })
+        }
+        );
+    } else {
+        return new Promise((resolve, reject) => {
+            RequestWrapper.get(BASE_URL + '/query?function=' + timeSeries + '&from_symbol=' + fromSymbol + '&to_symbol=' + toSymbol + '&apikey=' + API_KEY).then(response => {
+                const filteredResponse = response['Time Series FX (' + CurrencyLabel[timeSeries] + ')'];
+                return getSingleLine(filteredResponse, '1. open', CompanyLineNumberEnum.SingleCompany).then(response => {
                     return resolve(response);
                 })
             })

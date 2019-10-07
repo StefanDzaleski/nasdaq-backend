@@ -17,6 +17,12 @@ const TimeSeriesLabel = {
         'TIME_SERIES_WEEKLY': 'Weekly',
         'TIME_SERIES_MONTHLY': 'Monthly'
     }
+
+const CurrencyLabel = {
+        'FX_DAILY': 'Daily',
+        'FX_WEEKLY': 'Weekly',
+        'FX_MONTHLY': 'Monthly'
+    }
     
 const CompanyLineNumberEnum = {
         SingleCompany: 'singleCompany',
@@ -24,11 +30,20 @@ const CompanyLineNumberEnum = {
         SingleLine: 'singleLine',
         MultiLine: 'multiLine'
     }
+
+const CurrencyEnum = {
+        Intraday: 'FX_INTRADAY',
+        Daily: 'FX_DAILY',
+        Weekly: 'FX_WEEKLY',
+        Monthly: 'FX_MONTHLY'
+    }
     
 
 module.exports = {
     CompanyLineNumberEnum,
     TimeSeriesEnum,
     TimeSeriesLabel,
-    TimeSeries
+    TimeSeries,
+    CurrencyEnum,
+    CurrencyLabel
 }
