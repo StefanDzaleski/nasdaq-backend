@@ -4,14 +4,14 @@ const bodyParser = require('body-parser');
 const RequestWrapper = require('./requestWrapper');
 const {CompanyLineNumberEnum, TimeSeriesEnum, TimeSeriesLabel, CurrencyEnum, CurrencyLabel} = require('./enums');
 const {getSingleLine, getMultipleLines} = require('./parseData');
-// const cors = require('cors');
+const cors = require('cors');
 
 const app = express();
 const URL = 'mongodb+srv://StefanTest:TestPassword@clusterdiplomska-h6bmf.mongodb.net/test?retryWrites=true&w=majority'
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cors);
+app.use(cors());
 
 let database, collection;
 const BASE_URL = "https://www.alphavantage.co";
