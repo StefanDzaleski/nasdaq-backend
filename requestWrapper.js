@@ -11,6 +11,7 @@ const rp = require('request-promise');
             return rp(options)
                 .then((result) => {
                     console.log('Request Wrapper -> Sending GET request -> SUCCESS: ');
+                    console.log('Result: ', result);
                     return resolve(result);
                 })
                 .catch((err) => {
